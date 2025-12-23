@@ -291,6 +291,9 @@ def _process_company(
             "score": analysis.technical_score,
             "rsi": analysis.rsi,
             "pct_from_low": analysis.percent_from_low,
+            "price": analysis.price,
+            "high_52w": analysis.fifty_two_week_high,
+            "potential_upside": ((analysis.fifty_two_week_high - analysis.price) / analysis.price) * 100,
             "signals": analysis.signals,
         })
         return failed_data, failed_discovery, failed_technical
@@ -323,10 +326,11 @@ def _build_results_table(passed: list[dict]) -> Table:
     """Build the results table with formatted stock data."""
     results_table = Table(title="🎯 Opportunities (sorted by score)", show_header=True, header_style="bold cyan")
     results_table.add_column("Ticker", style="bold")
+    results_table.add_column("Company", max_width=20)
     results_table.add_column("Score", justify="right")
     results_table.add_column("RSI", justify="right")
     results_table.add_column("% Low", justify="right")
-    results_table.add_column("Sector")
+    results_table.add_column("Upside", justify="right")
     results_table.add_column("Signals", style="dim")
 
     for stock in sorted(passed, key=lambda x: -x["score"]):
@@ -336,12 +340,22 @@ def _build_results_table(passed: list[dict]) -> Table:
         rsi_color, rsi_icon = _get_rsi_formatting(stock["rsi"])
         pct_color, pct_icon = _get_pct_low_formatting(stock["pct_from_low"])
 
+        # Upside color based on potential
+        upside = stock.get("potential_upside", 0)
+        upside_color = "green" if upside >= 20 else "yellow" if upside >= 10 else "dim"
+
+        # Truncate company name if too long
+        company_name = stock["name"]
+        if len(company_name) > 20:
+            company_name = company_name[:18] + ".."
+
         results_table.add_row(
             stock["ticker"],
+            company_name,
             f"[{score_color}]{stock['score']}[/]",
-            f"[{rsi_color}]{rsi_icon} {stock['rsi']:.1f}[/]",
-            f"[{pct_color}]{pct_icon} {stock['pct_from_low']:.1f}%[/]",
-            stock["sector"],
+            f"[{rsi_color}]{rsi_icon} {stock['rsi']:4.1f}[/]",
+            f"[{pct_color}]{pct_icon}{stock['pct_from_low']:5.1f}%[/]",
+            f"[{upside_color}]+{upside:3.0f}%[/]",
             signals_str,
         )
 
@@ -443,6 +457,15 @@ def run_scan(limit: int, sector: str | None, min_score: int) -> None:
         console.print()
         results_table = _build_results_table(passed)
         console.print(results_table)
+
+        # Legend
+        console.print()
+        console.print(
+            "[dim]Legend: "
+            "RSI [green]▼<30[/] oversold [yellow]↗30-50[/] recovering [white]─50-70[/] neutral [red]▲>70[/] overbought │ "
+            "% Low [green]●≤15%[/] sweet spot [yellow]◐15-20%[/] okay │ "
+            "Upside = potential gain to 52-week high[/]"
+        )
     else:
         console.print("[yellow]No stocks passed all gates.[/]")
 
