@@ -47,7 +47,7 @@ console = Console()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan handler for startup/shutdown."""
     console.print("🚀 [bold green]Semantic Stocks API starting up...[/]")
     companies = get_sp500_companies()

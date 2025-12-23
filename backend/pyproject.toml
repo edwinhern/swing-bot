@@ -27,6 +27,7 @@ dev = [
 [tool.mypy]
 plugins = ['pydantic.mypy']
 files = ["app"]
+python_version = "3.13"
 explicit_package_bases = true
 disallow_untyped_defs = true
 disallow_any_unimported = true
@@ -36,18 +37,23 @@ warn_return_any = true
 warn_unused_ignores = true
 show_error_codes = true
 
+# Consolidated overrides for libraries without type stubs
+[[tool.mypy.overrides]]
+module = ["massive", "massive.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["asyncpg", "asyncpg.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["perplexity", "perplexity.*"]
+ignore_missing_imports = true
+
 [tool.ruff]
-target-version = "py39"
+target-version = "py313"
 line-length = 120
 fix = true
-
-[[tool.mypy.overrides]]
-module = "massive"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "massive.*"
-ignore_missing_imports = true
 
 [tool.ruff.lint]
 select = [
@@ -81,6 +87,14 @@ select = [
     "RUF",
     # tryceratops
     "TRY",
+    # flake8-async
+    "ASYNC",
+    # flake8-use-pathlib
+    "PTH",
+    # flake8-return
+    "RET",
+    # perflint
+    "PERF",
 ]
 ignore = [
     # LineTooLong

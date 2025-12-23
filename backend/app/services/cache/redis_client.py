@@ -2,6 +2,7 @@
 
 import json
 import os
+from typing import Any, cast
 
 import redis
 
@@ -50,7 +51,7 @@ class RedisCache:
         self._db = db
 
         self._client = redis.Redis(
-            host=self._host,
+            host=self._host or "localhost",
             port=self._port,
             password=self._password,
             db=self._db,
@@ -60,7 +61,7 @@ class RedisCache:
     def ping(self) -> bool:
         """Check if Redis is connected."""
         try:
-            return self._client.ping()
+            return bool(self._client.ping())
         except redis.ConnectionError:
             return False
 
@@ -72,12 +73,12 @@ class RedisCache:
     # S&P 500 List Cache
     # =========================================================================
 
-    def get_sp500_list(self) -> list[dict] | None:
+    def get_sp500_list(self) -> list[dict[str, Any]] | None:
         """Get cached S&P 500 companies list."""
         key = self._make_key(self.PREFIX_SP500, "list")
         data = self._client.get(key)
-        if data:
-            return json.loads(data)
+        if data and isinstance(data, str):
+            return cast(list[dict[str, Any]], json.loads(data))
         return None
 
     def set_sp500_list(self, companies: list[dict], ttl: int | None = None) -> None:
@@ -93,12 +94,12 @@ class RedisCache:
     # Technical Analysis Cache
     # =========================================================================
 
-    def get_technical_analysis(self, ticker: str) -> dict | None:
+    def get_technical_analysis(self, ticker: str) -> dict[str, Any] | None:
         """Get cached technical analysis for a ticker."""
         key = self._make_key(self.PREFIX_TECHNICAL, ticker.upper())
         data = self._client.get(key)
-        if data:
-            return json.loads(data)
+        if data and isinstance(data, str):
+            return cast(dict[str, Any], json.loads(data))
         return None
 
     def set_technical_analysis(
@@ -119,12 +120,12 @@ class RedisCache:
     # Quick Scan Cache
     # =========================================================================
 
-    def get_quick_scan(self, ticker: str) -> dict | None:
+    def get_quick_scan(self, ticker: str) -> dict[str, Any] | None:
         """Get cached quick scan result for a ticker."""
         key = self._make_key(self.PREFIX_QUICK_SCAN, ticker.upper())
         data = self._client.get(key)
-        if data:
-            return json.loads(data)
+        if data and isinstance(data, str):
+            return cast(dict[str, Any], json.loads(data))
         return None
 
     def set_quick_scan(
@@ -145,12 +146,12 @@ class RedisCache:
     # Deep Research Cache
     # =========================================================================
 
-    def get_deep_research(self, ticker: str) -> dict | None:
+    def get_deep_research(self, ticker: str) -> dict[str, Any] | None:
         """Get cached deep research result for a ticker."""
         key = self._make_key(self.PREFIX_DEEP_RESEARCH, ticker.upper())
         data = self._client.get(key)
-        if data:
-            return json.loads(data)
+        if data and isinstance(data, str):
+            return cast(dict[str, Any], json.loads(data))
         return None
 
     def set_deep_research(
@@ -171,12 +172,12 @@ class RedisCache:
     # Recommendation Cache
     # =========================================================================
 
-    def get_recommendation(self, ticker: str) -> dict | None:
+    def get_recommendation(self, ticker: str) -> dict[str, Any] | None:
         """Get cached recommendation for a ticker."""
         key = self._make_key(self.PREFIX_RECOMMENDATION, ticker.upper())
         data = self._client.get(key)
-        if data:
-            return json.loads(data)
+        if data and isinstance(data, str):
+            return cast(dict[str, Any], json.loads(data))
         return None
 
     def set_recommendation(
@@ -206,14 +207,16 @@ class RedisCache:
             self._make_key(self.PREFIX_DEEP_RESEARCH, ticker),
             self._make_key(self.PREFIX_RECOMMENDATION, ticker),
         ]
-        return self._client.delete(*keys)
+        result = self._client.delete(*keys)
+        return int(result) if isinstance(result, int) else 0
 
     def invalidate_all(self) -> int:
         """Invalidate all cached data (use with caution)."""
         pattern = "semantic-stocks:*"
         keys = list(self._client.scan_iter(match=pattern))
         if keys:
-            return self._client.delete(*keys)
+            result = self._client.delete(*keys)
+            return int(result) if isinstance(result, int) else 0
         return 0
 
 

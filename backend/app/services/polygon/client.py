@@ -2,12 +2,9 @@
 
 import os
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import Any
 
 from massive import RESTClient
-
-if TYPE_CHECKING:
-    from massive.rest.aggs import Agg
 
 
 class PolygonClient:
@@ -29,7 +26,7 @@ class PolygonClient:
         ticker: str,
         days: int = 365,
         limit: int = 5000,
-    ) -> list["Agg"]:
+    ) -> list[Any]:
         """Fetch daily price bars for a ticker.
 
         Args:
@@ -55,7 +52,7 @@ class PolygonClient:
         ticker: str,
         days: int = 7,
         limit: int = 5000,
-    ) -> list["Agg"]:
+    ) -> list[Any]:
         """Fetch minute-level price bars for a ticker.
 
         Args:
@@ -76,7 +73,7 @@ class PolygonClient:
         )
         return list(bars)
 
-    def get_previous_close(self, ticker: str) -> "Agg | None":
+    def get_previous_close(self, ticker: str) -> Any | None:
         """Get the previous day's close for a ticker.
 
         Args:

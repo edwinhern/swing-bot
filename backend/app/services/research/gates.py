@@ -211,12 +211,11 @@ def check_quick_scan_gate(
                 gate_name="quick_scan",
                 reason="Temporary issues detected but allowed - proceed with caution",
             )
-        else:
-            return GateResult(
-                passed=False,
-                gate_name="quick_scan",
-                reason="Temporary issues detected - config set to block",
-            )
+        return GateResult(
+            passed=False,
+            gate_name="quick_scan",
+            reason="Temporary issues detected - config set to block",
+        )
 
     return GateResult(
         passed=True,

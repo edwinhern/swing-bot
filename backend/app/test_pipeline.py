@@ -39,15 +39,8 @@ def test_sp500_data() -> None:
     for sector, count in sorted(sectors.items(), key=lambda x: -x[1]):
         print(f"  {sector:40} {count:3} companies")
 
-    # Show first 5
-    print("\nFirst 5 companies:")
-    for c in companies[:5]:
-        print(f"  {c.ticker:6} | {c.company_name:30} | {c.sector}")
 
-    return companies
-
-
-def test_technical_screening(limit: int = 20) -> None:
+def test_technical_screening(limit: int = 20) -> list[dict[str, object]]:
     """Test Stage 0-1: Technical screening with Polygon.
 
     This tests both the discovery gate (52-week low proximity)

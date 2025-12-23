@@ -1,12 +1,9 @@
 """Technical indicator calculations for stock analysis."""
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from massive.rest.aggs import Agg
+from typing import Any
 
 
-def calculate_sma(bars: list["Agg"], period: int) -> float | None:
+def calculate_sma(bars: list[Any], period: int) -> float | None:
     """Calculate Simple Moving Average for a given period.
 
     Args:
@@ -21,11 +18,11 @@ def calculate_sma(bars: list["Agg"], period: int) -> float | None:
 
     # Use the most recent 'period' bars
     recent_bars = bars[-period:]
-    closes = [bar.close for bar in recent_bars]
+    closes: list[float] = [bar.close for bar in recent_bars]
     return sum(closes) / period
 
 
-def calculate_rsi(bars: list["Agg"], period: int = 14) -> float | None:
+def calculate_rsi(bars: list[Any], period: int = 14) -> float | None:
     """Calculate Relative Strength Index.
 
     Uses the standard RSI formula:
@@ -43,9 +40,7 @@ def calculate_rsi(bars: list["Agg"], period: int = 14) -> float | None:
         return None
 
     # Calculate price changes
-    changes: list[float] = []
-    for i in range(1, len(bars)):
-        changes.append(bars[i].close - bars[i - 1].close)
+    changes: list[float] = [bars[i].close - bars[i - 1].close for i in range(1, len(bars))]
 
     if len(changes) < period:
         return None
@@ -68,7 +63,7 @@ def calculate_rsi(bars: list["Agg"], period: int = 14) -> float | None:
     return round(rsi, 2)
 
 
-def calculate_average_volume(bars: list["Agg"], period: int = 20) -> int | None:
+def calculate_average_volume(bars: list[Any], period: int = 20) -> int | None:
     """Calculate average trading volume over a period.
 
     Args:
@@ -99,14 +94,13 @@ def get_price_vs_sma_signal(price: float, sma_20: float, sma_50: float) -> str:
     """
     if price > sma_20 > sma_50:
         return "bullish_alignment"
-    elif price > sma_20:
+    if price > sma_20:
         return "above_sma20"
-    elif sma_20 > sma_50:
+    if sma_20 > sma_50:
         return "golden_cross_forming"
-    elif price < sma_20 < sma_50:
+    if price < sma_20 < sma_50:
         return "bearish_alignment"
-    else:
-        return "neutral"
+    return "neutral"
 
 
 def get_rsi_signal(rsi: float) -> str:
@@ -120,13 +114,12 @@ def get_rsi_signal(rsi: float) -> str:
     """
     if rsi < 25:
         return "extremely_oversold"
-    elif 25 <= rsi < 35:
+    if 25 <= rsi < 35:
         return "oversold"
-    elif 35 <= rsi < 50:
+    if 35 <= rsi < 50:
         return "recovering"
-    elif 50 <= rsi < 60:
+    if 50 <= rsi < 60:
         return "neutral"
-    elif 60 <= rsi < 70:
+    if 60 <= rsi < 70:
         return "overbought_warning"
-    else:
-        return "overbought"
+    return "overbought"

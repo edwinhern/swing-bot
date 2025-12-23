@@ -39,7 +39,7 @@ class DatabaseService:
         self._user = user or os.getenv("DATABASE__USER", "admin")
         self._password = password or os.getenv("DATABASE__PASSWORD", "")
         self._database = database or os.getenv("DATABASE__DATABASE", "semantic_stocks_db")
-        self._pool: asyncpg.Pool | None = None
+        self._pool: asyncpg.Pool | None = None  # type: ignore[no-any-unimported]
 
     async def connect(self) -> None:
         """Create database connection pool."""
@@ -60,11 +60,15 @@ class DatabaseService:
             await self._pool.close()
             self._pool = None
 
-    async def _get_pool(self) -> asyncpg.Pool:
+    async def _get_pool(self) -> asyncpg.Pool:  # type: ignore[no-any-unimported]
         """Get connection pool, creating if necessary."""
         if self._pool is None:
             await self.connect()
-        return self._pool  # type: ignore[return-value]
+
+        pool = self._pool
+        if pool is None:
+            raise RuntimeError("Failed to establish database connection pool")
+        return pool
 
     # =========================================================================
     # Analysis Runs
@@ -89,7 +93,7 @@ class DatabaseService:
                 """,
                 config,
             )
-            return row["id"]
+            return UUID(str(row["id"]))
 
     def _build_update_clause(
         self,
@@ -282,7 +286,7 @@ class DatabaseService:
                 recommendation_data.get("risk_factors", []) if recommendation_data else [],
                 recommendation_data.get("citations", []) if recommendation_data else [],
             )
-            return row["id"]
+            return UUID(str(row["id"]))
 
     async def get_stock_analysis(self, ticker: str, limit: int = 1) -> list[dict]:
         """Get the most recent analyses for a ticker."""
