@@ -6,7 +6,13 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.124.4",
+    "httpx>=0.28.0",
     "massive>=2.0.2",
+    "pydantic>=2.10.0",
+    "perplexityai>=0.22.2",
+    "python-dotenv>=1.0.0",
+    "redis>=5.0.0",
+    "asyncpg>=0.30.0",
 ]
 
 [dependency-groups]
